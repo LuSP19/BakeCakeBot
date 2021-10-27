@@ -73,7 +73,10 @@ def main():
 
     start_handler = CommandHandler('start', start)
     accept_handler = MessageHandler(Filters.regex('Принять'), accept)
-    phone_handler = MessageHandler(Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'), phone)
+    phone_handler = MessageHandler(
+        Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
+        phone,
+    )
     cancel_handler = MessageHandler(Filters.text('Отклонить'), cancel)
 
     dispatcher.add_handler(start_handler)
