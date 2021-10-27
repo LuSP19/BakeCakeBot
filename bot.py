@@ -64,9 +64,9 @@ def phone(update, _):
     name = update.message.from_user.first_name
     surname = update.message.from_user.last_name
     if update.message.contact:
-        phone = update.message.contact.phone_number
+        phone_number = update.message.contact.phone_number
     else:
-        phone = update.message.text
+        phone_number = update.message.text
     add_user(name, surname, phone)
     reply_keyboard = [['Собрать торт']]
     user = update.message.from_user
@@ -80,7 +80,6 @@ def phone(update, _):
 
 
 def cancel(update, _):
-    """Cancels and ends the conversation."""
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
@@ -99,7 +98,10 @@ def main():
     start_handler = CommandHandler('start', start)
     register_handler = MessageHandler(Filters.regex('Регистрация'), register)
     accept_handler = MessageHandler(Filters.regex('Принять'), accept)
-    phone_handler = MessageHandler(Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'), phone)
+    phone_handler = MessageHandler(
+        Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
+        phone,
+    )
     cancel_handler = MessageHandler(Filters.text('Отклонить'), cancel)
 
     dispatcher.add_handler(start_handler)
