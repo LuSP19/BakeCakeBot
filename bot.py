@@ -65,9 +65,9 @@ def phone(update, _):
     name = update.message.from_user.first_name
     surname = update.message.from_user.last_name
     if update.message.contact:
-        phone = update.message.contact.phone_number
+        phone_number = update.message.contact.phone_number
     else:
-        phone = update.message.text
+        phone_number = update.message.text
     add_user(name, surname, phone)
     reply_keyboard = [['Собрать торт']]
     user = update.message.from_user
