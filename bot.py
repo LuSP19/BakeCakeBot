@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 def start(update, _):
     user = get_user(update.message.from_user.id)
-    print('User ID:', update.message.from_user.id)
     if get_user(user):
         if user.get('orders'):
             reply_keyboard = [['Собрать торт', 'Заказы', 'Отклонить']]
