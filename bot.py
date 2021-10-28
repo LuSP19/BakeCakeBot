@@ -9,7 +9,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from bot_helpers import get_user, add_user
+from bot_helpers import get_user, add_user, add_address
 
 
 logging.basicConfig(
@@ -20,42 +20,82 @@ logger = logging.getLogger(__name__)
 
 
 def start(update, _):
-    reply_keyboard = [['Принять', 'Отклонить']]
+    user = get_user(str(update.message.from_user.id))
+    if user:
+        if user.get('orders'):
+            reply_keyboard = [['Собрать торт', 'Заказы']]
+            update.message.reply_text(
+                'Соберите торт или посмотрите свои заказы',
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+                )
+        else:
+            reply_keyboard = [['Собрать торт']]
+            update.message.reply_text(
+                'Соберите торт',
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+                )
+    else:
+        reply_keyboard = [['Принять', 'Отклонить']]
 
-    with open('personal_data.pdf', 'rb') as pd_file:
-        update.message.reply_document(pd_file)
-
-    update.message.reply_text(
-            'Для использования сервиса подтвердите солгасие на обработку персональных данных',
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard)
-        )
+        update.message.reply_text(
+                'Подтвердите солгасие на обработку персональных данных.\n'
+                'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard)
+            )
 
 
 def accept(update, _):
     phone_request_button = KeyboardButton('Передать контакт', request_contact=True)
-    reply_keyboard = [[phone_request_button, 'Ввести номер', 'Отклонить']]
+    reply_keyboard = [['Введите контактный номер телефона']]
 
     update.message.reply_text(
         'Изготовление тортов на заказ.',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            input_field_placeholder='+7-999-999-9999',
+            input_field_placeholder='+7-999-999-99-99',
         )
     )
 
 
 def phone(update, _):
-    user_id = update.message.from_user.id
+    user_id = str(update.message.from_user.id)
     name = update.message.from_user.first_name
     surname = update.message.from_user.last_name
-    if update.message.contact:
-        phone_number = update.message.contact.phone_number
-    else:
-        phone_number = update.message.text
-    add_user(name, surname, phone_number, user_id)
-    reply_keyboard = [['Собрать торт']]
+    phone_number = update.message.text
+    add_user(user_id, name, surname, phone_number)
+    reply_keyboard = [['Введите адрес доставки']]
     user = update.message.from_user
     logger.info('Match %s with %s', user, phone_number)
+    update.message.reply_text(
+        'Изготовление тортов на заказ.',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+    )
+
+
+def contact(update, _):
+    user_id = str(update.message.from_user.id)
+    name = update.message.from_user.first_name
+    surname = update.message.from_user.last_name
+    phone_number = update.message.contact.phone_number
+    add_user(user_id, name, surname, phone_number)
+    reply_keyboard = [['Введите адрес доставки']]
+    user = update.message.from_user
+    logger.info('Match %s with %s', user, phone_number)
+    update.message.reply_text(
+        'Изготовление тортов на заказ.',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+    )
+
+
+def address(update, _):
+    print('In address')
+    user_id = str(update.message.from_user.id)
+    address = update.message.text
+    print('address', address)
+    add_address(user_id, address)
+    reply_keyboard = [['Собрать торт']]
+    user = update.message.from_user
+    logger.info('Match %s with %s', user, address)
     update.message.reply_text('Вы успешно зарегистрированы!')
     update.message.reply_text(
         'Выберите ингредиенты, форму, основу, надпись, '
@@ -67,10 +107,13 @@ def phone(update, _):
 def cancel(update, _):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
+    reply_keyboard = [['Принять', 'Отклонить']]
     update.message.reply_text(
-        'Всего доброго!',
-        reply_markup=ReplyKeyboardRemove(),
-    )
+            'К сожалению, без согласия на обработку ПД вы не сможете сделать заказ\n\n'
+            'Подтвердите солгасие на обработку персональных данных.\n'
+            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard)
+        )
 
 
 def main():
@@ -86,11 +129,15 @@ def main():
         Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
         phone,
     )
+#    contact_handler = MessageHandler(Filters.contact, accept)
+    address_handler = MessageHandler(Filters.regex('^.{8,}$'), address)
     cancel_handler = MessageHandler(Filters.text('Отклонить'), cancel)
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(accept_handler)
     dispatcher.add_handler(phone_handler)
+#    dispatcher.add_handler(contact_handler)
+    dispatcher.add_handler(address_handler)
     dispatcher.add_handler(cancel_handler)
 
     updater.start_polling()
