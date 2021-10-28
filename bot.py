@@ -55,13 +55,15 @@ def accept(update, _):
 
 
 def phone(update, _):
-    user_id = str(update.message.from_user.id)
-    name = update.message.from_user.first_name
-    surname = update.message.from_user.last_name
-    phone_number = update.message.text
-    add_user(user_id, name, surname, phone_number)
-    reply_keyboard = [['Введите адрес доставки']]
     user = update.message.from_user
+    phone_number = update.message.text
+    add_user(
+        str(user.id),
+        user.first_name,
+        user.last_name,
+        phone_number,
+    )
+    reply_keyboard = [['Введите адрес доставки']]
     logger.info('Match %s with %s', user, phone_number)
     update.message.reply_text(
         'Изготовление тортов на заказ.',
