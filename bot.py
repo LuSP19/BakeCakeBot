@@ -31,10 +31,10 @@ def start(update, _):
     else:
         reply_keyboard = [['Принять', 'Отклонить']]
         reply_text = (
-            'Подтвердите солгасие на обработку персональных данных.\n'
+            'Подтвердите согласие на обработку персональных данных.\n'
             'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-'
         )
-        
+
     update.message.reply_text(
         reply_text,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard),
