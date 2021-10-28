@@ -20,29 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 def start(update, _):
-    user = get_user(update.message.from_user.id)
-    if user:
-        if user.get('orders'):
-            reply_keyboard = [['Собрать торт', 'Заказы', 'Отклонить']]
-        else:
-            reply_keyboard = [['Собрать торт', 'Отклонить']]
-    else:
-        reply_keyboard = [['Регистрация', 'Отклонить']]
-
-        update.message.reply_text(
-                'Перед использованием бота нужно зарегистрироваться',
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard)
-            )
-
-
-def register(update, _):
     reply_keyboard = [['Принять', 'Отклонить']]
 
     with open('personal_data.pdf', 'rb') as pd_file:
         update.message.reply_document(pd_file)
 
     update.message.reply_text(
-            'Подтвердите солгасие на обработку персональных данных',
+            'Для использования сервиса подтвердите солгасие на обработку персональных данных',
             reply_markup=ReplyKeyboardMarkup(reply_keyboard)
         )
 
@@ -61,13 +45,14 @@ def accept(update, _):
 
 
 def phone(update, _):
+    user_id = update.message.from_user.id
     name = update.message.from_user.first_name
     surname = update.message.from_user.last_name
     if update.message.contact:
         phone_number = update.message.contact.phone_number
     else:
         phone_number = update.message.text
-    add_user(name, surname, phone)
+    add_user(name, surname, phone_number, user_id)
     reply_keyboard = [['Собрать торт']]
     user = update.message.from_user
     logger.info('Match %s with %s', user, phone_number)
@@ -96,7 +81,6 @@ def main():
     dispatcher = updater.dispatcher
 
     start_handler = CommandHandler('start', start)
-    register_handler = MessageHandler(Filters.regex('Регистрация'), register)
     accept_handler = MessageHandler(Filters.regex('Принять'), accept)
     phone_handler = MessageHandler(
         Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
@@ -105,7 +89,6 @@ def main():
     cancel_handler = MessageHandler(Filters.text('Отклонить'), cancel)
 
     dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(register_handler)
     dispatcher.add_handler(accept_handler)
     dispatcher.add_handler(phone_handler)
     dispatcher.add_handler(cancel_handler)
