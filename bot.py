@@ -55,7 +55,7 @@ def accept(update, _):
         'Изготовление тортов на заказ.',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            input_field_placeholder='+7-999-9999',
+            input_field_placeholder='+7-999-999-9999',
         )
     )
 
