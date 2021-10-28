@@ -24,24 +24,21 @@ def start(update, _):
     if user:
         if user.get('orders'):
             reply_keyboard = [['Собрать торт', 'Заказы']]
-            update.message.reply_text(
-                'Соберите торт или посмотрите свои заказы',
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard),
-                )
+            reply_text = 'Соберите торт или посмотрите свои заказы'
         else:
             reply_keyboard = [['Собрать торт']]
-            update.message.reply_text(
-                'Соберите торт',
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard),
-                )
+            reply_text = 'Соберите торт'
     else:
         reply_keyboard = [['Принять', 'Отклонить']]
-
-        update.message.reply_text(
-                'Подтвердите солгасие на обработку персональных данных.\n'
-                'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
-                reply_markup=ReplyKeyboardMarkup(reply_keyboard)
-            )
+        reply_text = (
+            'Подтвердите солгасие на обработку персональных данных.\n'
+            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-'
+        )
+        
+    update.message.reply_text(
+        reply_text,
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+    )
 
 
 def accept(update, _):
