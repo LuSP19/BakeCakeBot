@@ -138,9 +138,10 @@ def get_orders(user_id):
     for order in users[user_id]['orders']:
     	order_layout = []
     	order_layout.append(f'Номер заказа: {order["order_id"]}')
-    	order_layout.append(f'Стоимость торта: [пока нет]')
+    	order_layout.append(f'Стоимость торта: {order["cost"]}')
     	order_layout.append(f'Дата: {order["delivery_date"]}')
     	order_layout.append(f'Время: {order["delivery_time"]}')
     	order_layout.append(f'Статус заказа: {order["status"]}')
     	orders.append(order_layout)
+    orders.reverse()
     return orders
