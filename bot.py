@@ -263,6 +263,13 @@ def cake_confirm(update, context):
 
 
 def comments(update, context):
+    if context.user_data.get('comments'):
+        del context.user_data['comments']
+    if context.user_data.get('delivery_date'):
+        del context.user_data['delivery_date']
+    if context.user_data.get('delivery_time'):
+        del context.user_data['delivery_time']
+        
     reply_keyboard = [['Пропустить','Начать собирать заново']]
     update.message.reply_text(
         'Можете оставить комментарий к заказу',
