@@ -24,7 +24,7 @@ REGISTER, CONTACT_CONFIRM, PHONE, ADDRESS = range(4)
 
 SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT, INPUT_TEXT = range(4, 12)
 
-COMMENTS, DELIVERY_DATE, DELIVERY_TIME, CONFIRM, COMPLETE = range(12, 17)
+COMMENTS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(12, 18)
 
 
 def start(update, context):
@@ -312,9 +312,22 @@ def delivery_time(update, context):
     return DELIVERY_TIME
 
 
+def promocode(update, context):
+    context.user_data['delivery_time'] = update.message.text
+    reply_keyboard = [['Пропустить', 'Начать собирать заново']]
+    update.message.reply_text(
+        'Введите промокод',
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True
+        ),
+    )
+    return PROMOCODE
+
+
 def order_details(update, context):
     # Начало ветки "Проверка и отправка заказа"
-    context.user_data['delivery_time'] = update.message.text
+    context.user_data['promocode'] = update.message.text
     reply_keyboard = [['Заказать торт', 'Начать собирать заново', 'Изменить условия']]
     update.message.reply_text(
         'Все готово! Нажмите "Заказать торт", чтобы увидеть стоимость.',
@@ -450,6 +463,10 @@ def main():
             DELIVERY_TIME: [
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
                 MessageHandler(Filters.text, order_details),
+            ],
+            PROMOCODE: [
+                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text & Filters.regex('^Пропустить$'), order_details),
             ],
             CONFIRM: [
                 MessageHandler(Filters.regex('^Заказать торт$'), order_confirm),
