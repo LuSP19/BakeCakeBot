@@ -20,11 +20,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-REGISTER, CONTACT, PHONE, ADDRESS, CONFIRM = range(5)
+REGISTER, CONTACT_CONFIRM, PHONE, ADDRESS = range(4)
 
-SET_CAKE, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT, INPUT_TEXT = range(5, 13)
+SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT, INPUT_TEXT = range(4, 12)
 
-COMMENTS, DELIVERY_DATE, DELIVERY_TIME, COMPLETE = range(13, 17)
+COMMENTS, DELIVERY_DATE, DELIVERY_TIME, CONFIRM, COMPLETE = range(12, 17)
 
 
 def start(update, context):
@@ -50,7 +50,7 @@ def start(update, context):
     return REGISTER
 
 
-def contact(update, context):
+def phone(update, context):
     # Начало ветки "Контактные данные"
     if context.user_data.get('user_address'):
         del context.user_data['user_address']
@@ -98,7 +98,7 @@ def success_address(update, context):
         f'Адрес: {user_address}',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard)
     )
-    return CONTACT
+    return CONTACT_CONFIRM
 
 
 def reg_confirm(update, context):
@@ -120,7 +120,7 @@ def reg_confirm(update, context):
         'Поздравляем! Теперь вы можете выбрать компоненты торта.',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard),
     )
-    return SET_CAKE
+    return SET_CAKE_CONFIRM
 
 
 def levels(update, context):
@@ -261,7 +261,7 @@ def cake_confirm(update, context):
             resize_keyboard=True
         ),
     )
-    return SET_CAKE
+    return SET_CAKE_CONFIRM
 
 
 def comments(update, context):
@@ -382,12 +382,12 @@ def main():
         entry_points=[CommandHandler('start', start)],
         states={
             REGISTER: [
-                MessageHandler(Filters.regex('^Принять$'), contact),
+                MessageHandler(Filters.regex('^Принять$'), phone),
                 MessageHandler(Filters.regex('^Отклонить$'), decline),
                 MessageHandler(Filters.regex('^Собрать торт$'), levels),
             ],
-            CONTACT: [
-                MessageHandler(Filters.regex('^Изменить$'), contact),
+            CONTACT_CONFIRM: [
+                MessageHandler(Filters.regex('^Изменить$'), phone),
                 MessageHandler(Filters.regex('^Все верно$'), reg_confirm),
             ],
             PHONE: [
@@ -400,7 +400,7 @@ def main():
             ADDRESS: [
                 MessageHandler(Filters.text, success_address),
             ],
-            SET_CAKE: [
+            SET_CAKE_CONFIRM: [
                 MessageHandler(Filters.regex('^Собрать торт$|^Изменить$'), levels),
                 MessageHandler(Filters.regex('^Все верно$'), comments),
             ],
