@@ -51,6 +51,7 @@ def start(update, context):
 
 
 def contact(update, context):
+    # Начало ветки "Контактные данные"
     if context.user_data.get('user_address'):
         del context.user_data['user_address']
     elif context.user_data.get('phone_number'):
@@ -123,6 +124,7 @@ def reg_confirm(update, context):
 
 
 def levels(update, context):
+    # Начало ветки "Собрать торт"
     if context.user_data.get('levels'):
         del context.user_data['levels']
     elif context.user_data.get('form'):
@@ -263,13 +265,14 @@ def cake_confirm(update, context):
 
 
 def comments(update, context):
+    # Начало ветки "Дополнительные условия заказа"
     if context.user_data.get('comments'):
         del context.user_data['comments']
     if context.user_data.get('delivery_date'):
         del context.user_data['delivery_date']
     if context.user_data.get('delivery_time'):
         del context.user_data['delivery_time']
-        
+
     reply_keyboard = [['Пропустить','Начать собирать заново']]
     update.message.reply_text(
         'Можете оставить комментарий к заказу',
@@ -308,6 +311,7 @@ def delivery_time(update, context):
 
 
 def order_details(update, context):
+    # Начало ветки "Проверка и отправка заказа"
     context.user_data['delivery_time'] = update.message.text
     reply_keyboard = [['Заказать торт', 'Начать собирать заново', 'Изменить условия']]
     update.message.reply_text(
