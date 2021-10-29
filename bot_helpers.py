@@ -5,7 +5,7 @@ import json
 
 def read_db():
     if Path('bakecake_db.json').is_file():
-        with open('bakes.json', 'r') as db_file:
+        with open('bakes.json', 'r', encoding='utf-8') as db_file:
             try:
                 db = json.load(db_file)
             except:
@@ -32,12 +32,10 @@ def get_last_order_id(users):
 
 
 def add_order(context_data):
-    with open('bakes.json', 'r') as bakes_file:
+    with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
         users = json.load(bakes_file)
     order_id = get_last_order_id(users) + 1
     user_id = str(context_data['user_id'])
-    cost = count_cost(levels, form, topping, berries, decor,
-        text)
     order = {
         'order_id': order_id,
         'levels': context_data['levels'],
@@ -50,11 +48,11 @@ def add_order(context_data):
         'delivery_date': context_data['delivery_date'],
         'delivery_time': context_data['delivery_time'],
         'status': 'заявка обрабатывается',
-        'cost' : cost
+        'cost': context_data['cost'],
     }
     users[user_id]['orders'].append(order)
     users[user_id].update({'orders': users[user_id]['orders']})
-    with open('bakes.json', 'w') as bakes_file:
+    with open('bakes.json', 'w', encoding='utf-8') as bakes_file:
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
 
 
@@ -67,11 +65,11 @@ def add_user(context_data):
         'address': context_data['user_address'],
         'orders': [],
     }
-    with open('bakes.json', 'r') as bakes_file:
+    with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
         users = json.load(bakes_file)
         if str(user_id) not in users.keys():
             users.update({ user_id: user })
-    with open('bakes.json', 'w') as bakes_file:
+    with open('bakes.json', 'w', encoding='utf-8') as bakes_file:
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
 
 
@@ -130,3 +128,19 @@ def count_cost(levels, form, topping, berries, decor, text):
         cost += 500
 
     return str(cost)
+
+
+def get_orders(user_id):
+    user_id = str(user_id)
+    with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
+        users = json.load(bakes_file)
+    orders = []
+    for order in users[user_id]['orders']:
+    	order_layout = []
+    	order_layout.append(f'Номер заказа: {order["order_id"]}')
+    	order_layout.append(f'Стоимость торта: [пока нет]')
+    	order_layout.append(f'Дата: {order["delivery_date"]}')
+    	order_layout.append(f'Время: {order["delivery_time"]}')
+    	order_layout.append(f'Статус заказа: {order["status"]}')
+    	orders.append(order_layout)
+    return orders

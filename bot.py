@@ -29,6 +29,7 @@ COMMENTS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(12,
 
 def start(update, context):
     user = get_user(str(update.message.from_user.id))
+    context.user_data['user_id'] = update.message.from_user.id
     if user:
         if user.get('orders'):
             reply_keyboard = [['Собрать торт', 'Заказы']]
@@ -340,12 +341,13 @@ def order_details(update, context):
 
 
 def order_confirm(update, context):
-    add_order(context.user_data)
     for key, value in context.user_data.items():
         logger.info('%s - %s', key, value)
     cost = count_cost(context.user_data['levels'], context.user_data['form'],
                       context.user_data['topping'], context.user_data['berries'],
                       context.user_data['decor'], context.user_data['text'])
+    context.user_data['cost'] = cost
+    add_order(context.user_data)
     reply_keyboard = [['Отправить заказ', 'Начать собирать заново', 'Изменить условия']]
     update.message.reply_text(
         f'Стоимость торта {cost}',
@@ -381,7 +383,7 @@ def decline(update, _):
 
 def show_orders(update, context):
     update.message.reply_text('На данный момент у вас такие заказы:')
-    for order in get_orders():
+    for order in get_orders(context.user_data['user_id']):
         update.message.reply_text('\n'.join(order))
     reply_keyboard = [['Собрать торт', 'Заказы']]
     update.message.reply_text(
