@@ -381,10 +381,11 @@ def show_orders(update, context):
     update.message.reply_text('На данный момент у вас такие заказы:')
     for order in get_orders():
         update.message.reply_text('\n'.join(order))
-    reply_keyboard = [['Собрать новый торт']]
+    reply_keyboard = [['Собрать торт', 'Заказы']]
     update.message.reply_text(
         reply_markup=ReplyKeyboardMarkup(reply_keyboard),
     )
+    return REGISTER
 
 
 def cancel(update, _):
