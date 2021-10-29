@@ -10,7 +10,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from bot_helpers import get_user, add_user, add_address
+from bot_helpers import get_user, add_user, add_order
 
 
 logging.basicConfig(
@@ -108,16 +108,13 @@ def success_address(update, context):
 
 def reg_confirm(update, context):
     user = update.message.from_user
+    context.user_data['user_id'] = user.id
+    context.user_data['first_name'] = user.first_name
+    context.user_data['last_name'] = user.last_name
     phone_number = context.user_data['phone_number']
     user_address = context.user_data['user_address']
 
-    add_user(
-        str(user.id),
-        user.first_name,
-        user.last_name,
-        phone_number,
-    )
-    add_address(str(user.id), user_address)
+    add_user(context.user_data)
 
     reply_keyboard = [['Собрать торт']]
     logger.info('Added %s with address %s abd phone number %s', user, user_address, phone_number)
@@ -330,6 +327,7 @@ def order_details(update, context):
 
 
 def order_confirm(update, context):
+    add_order(context.user_data)
     for key, value in context.user_data.items():
         logger.info('%s - %s', key, value)
     price = 'TODO'
