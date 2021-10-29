@@ -36,6 +36,8 @@ def add_order(context_data):
         users = json.load(bakes_file)
     order_id = get_last_order_id(users) + 1
     user_id = str(context_data['user_id'])
+    cost = count_cost(levels, form, topping, berries, decor,
+        text)
     order = {
         'order_id': order_id,
         'levels': context_data['levels'],
@@ -48,6 +50,7 @@ def add_order(context_data):
         'delivery_date': context_data['delivery_date'],
         'delivery_time': context_data['delivery_time'],
         'status': 'заявка обрабатывается',
+        'cost' : cost
     }
     users[user_id]['orders'].append(order)
     users[user_id].update({'orders': users[user_id]['orders']})
@@ -70,3 +73,60 @@ def add_user(context_data):
             users.update({ user_id: user })
     with open('bakes.json', 'w') as bakes_file:
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
+
+
+def count_cost(levels, form, topping, berries, decor, text):
+    cost = 0
+    if levels[0] == '1':
+        cost += 400
+    elif levels[0] == '2':
+        cost += 750
+    else:
+        cost += 1100
+    
+    if form == 'Круг':
+        cost += 400
+    elif form == 'Квадрат':
+        cost += 600
+    else:
+        cost += 1000
+
+    if topping == 'Белый соус':
+        cost += 200
+    elif topping == 'Карамельный сироп':
+        cost += 180
+    elif topping == 'Кленовый сироп':
+        cost += 200
+    elif topping == 'Клубничный сироп':
+        cost += 300
+    elif topping == 'Черничный сироп':
+        cost += 350
+    else:
+        cost += 200
+
+    if berries == 'Ежевика':
+        cost += 400
+    elif berries == 'Малина':
+        cost += 300
+    elif berries == 'Голубика':
+        cost += 450
+    elif berries == 'Клубника':
+        cost += 500
+
+    if decor == 'Фисташки':
+        cost += 300
+    elif decor == 'Безе':
+        cost += 400
+    elif decor == 'Фундук':
+        cost += 350
+    elif decor == 'Пекан':
+        cost += 300
+    elif decor == 'Маршмеллоу':
+        cost += 200
+    elif decor == 'Марципан':
+        cost += 280
+
+    if text != 'Пропустить':
+        cost += 500
+
+    return str(cost)
