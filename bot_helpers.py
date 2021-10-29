@@ -37,7 +37,7 @@ def add_order(context_data):
     order_id = get_last_order_id(users) + 1
     user_id = str(context_data['user_id'])
     cost = count_cost(levels, form, topping, berries, decor,
-        text, delivery_date, delivery_time)
+        text)
     order = {
         'order_id': order_id,
         'levels': context_data['levels'],
