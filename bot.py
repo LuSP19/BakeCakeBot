@@ -10,7 +10,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from bot_helpers import get_user, add_user, add_order
+from bot_helpers import get_user, add_user, add_order, get_orders
 
 
 logging.basicConfig(
@@ -377,6 +377,16 @@ def decline(update, _):
     return REGISTER
 
 
+def show_orders(update, context):
+    update.message.reply_text('На данный момент у вас такие заказы:')
+    for order in get_orders():
+        update.message.reply_text('\n'.join(order))
+    reply_keyboard = [['Собрать новый торт']]
+    update.message.reply_text(
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+    )
+
+
 def cancel(update, _):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
@@ -401,6 +411,7 @@ def main():
                 MessageHandler(Filters.regex('^Принять$'), phone),
                 MessageHandler(Filters.regex('^Отклонить$'), decline),
                 MessageHandler(Filters.regex('^Собрать торт$'), levels),
+                MessageHandler(Filters.regex('^Заказы$'), show_orders),
             ],
             CONTACT_CONFIRM: [
                 MessageHandler(Filters.regex('^Изменить$'), phone),
