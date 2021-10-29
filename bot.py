@@ -10,7 +10,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from bot_helpers import get_user, add_user, add_order
+from bot_helpers import get_user, add_user, add_order, count_cost
 
 
 logging.basicConfig(
@@ -330,10 +330,12 @@ def order_confirm(update, context):
     add_order(context.user_data)
     for key, value in context.user_data.items():
         logger.info('%s - %s', key, value)
-    price = 'TODO'
+    cost = count_cost(context.user_data['levels'], context.user_data['form'],
+                      context.user_data['topping'], context.user_data['berries'],
+                      context.user_data['decor'], context.user_data['text'])
     reply_keyboard = [['Отправить заказ', 'Начать собирать заново', 'Изменить условия']]
     update.message.reply_text(
-        'Стоимость торта будет скоро рассчитана',
+        f'Стоимость торта {cost}',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
             resize_keyboard=True
