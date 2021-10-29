@@ -1,7 +1,7 @@
 import logging
 
 from environs import Env
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     Updater,
     Filters,
@@ -57,15 +57,20 @@ def phone(update, context):
     elif context.user_data.get('phone_number'):
         del context.user_data['phone_number']
 
+    phone_request_button = KeyboardButton('Передать контакт', request_contact=True)
+    reply_keyboard = [[phone_request_button]]
     update.message.reply_text(
         'Введите контактный номер телефона',
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
     )
     return PHONE
 
 
 def correct_phone(update, context):
-    phone_number = update.message.text
+    if update.message.contact:
+        phone_number = update.message.contact.phone_number
+    else:
+        phone_number = update.message.text
     context.user_data['phone_number'] = phone_number
     logger.info('User %s points phone_number %s', update.message.from_user.id, phone_number)
     update.message.reply_text(
@@ -391,6 +396,7 @@ def main():
                 MessageHandler(Filters.regex('^Все верно$'), reg_confirm),
             ],
             PHONE: [
+                MessageHandler(Filters.contact, correct_phone),
                 MessageHandler(
                     Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
                     correct_phone,
