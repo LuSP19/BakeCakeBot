@@ -476,7 +476,7 @@ def main():
             ],
             DELIVERY_TIME: [
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
-                MessageHandler(Filters.text, order_details),
+                MessageHandler(Filters.text, promocode),
             ],
             PROMOCODE: [
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
