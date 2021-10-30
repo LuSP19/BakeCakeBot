@@ -36,6 +36,10 @@ def add_order(context_data):
         users = json.load(bakes_file)
     order_id = get_last_order_id(users) + 1
     user_id = str(context_data['user_id'])
+    if context_data['changed_address'] == 'Подтвердить':
+        delivery_addr = users[user_id]['address']
+    else:
+        delivery_addr = context_data['changed_address']
     order = {
         'order_id': order_id,
         'levels': context_data['levels'],
@@ -45,6 +49,7 @@ def add_order(context_data):
         'decor': context_data['decor'],
         'text': context_data['text'],
         'comment': context_data['comments'],
+        'delivery_addr': delivery_addr,
         'delivery_date': context_data['delivery_date'],
         'delivery_time': context_data['delivery_time'],
         'status': 'заявка обрабатывается',
@@ -139,12 +144,13 @@ def get_orders(user_id):
         users = json.load(bakes_file)
     orders = []
     for order in users[user_id]['orders']:
-    	order_layout = []
-    	order_layout.append(f'Номер заказа: {order["order_id"]}')
-    	order_layout.append(f'Стоимость торта: {order["cost"]}')
-    	order_layout.append(f'Дата: {order["delivery_date"]}')
-    	order_layout.append(f'Время: {order["delivery_time"]}')
-    	order_layout.append(f'Статус заказа: {order["status"]}')
-    	orders.append(order_layout)
+        order_layout = []
+        order_layout.append(f'Номер заказа: {order["order_id"]}')
+        order_layout.append(f'Стоимость торта: {order["cost"]}')
+        order_layout.append(f'Адрес доставки: {order["delivery_addr"]}')
+        order_layout.append(f'Дата: {order["delivery_date"]}')
+        order_layout.append(f'Время: {order["delivery_time"]}')
+        order_layout.append(f'Статус заказа: {order["status"]}')
+        orders.append(order_layout)
     orders.reverse()
     return orders

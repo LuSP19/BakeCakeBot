@@ -296,6 +296,8 @@ def comments(update, context):
         del context.user_data['delivery_date']
     if context.user_data.get('delivery_time'):
         del context.user_data['delivery_time']
+    if context.user_data.get('changed_address'):
+        del context.user_data['changed_address']
 
     reply_keyboard = [
         ['Пропустить'],
@@ -429,9 +431,7 @@ def order_confirm(update, context):
     return CONFIRM
 
 
-def complete_order(update, context):
-    if 'changed_address' in context.user_data:
-        '''ДОБАВИТЬ НОВЫЙ АДРЕС В БАЗУ'''
+def complete_order(update, context):  
     add_order(context.user_data)
     user = update.message.from_user
     logger.info("User %s completed order.", user.first_name)
