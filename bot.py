@@ -24,7 +24,7 @@ REGISTER, CONTACT_CONFIRM, PHONE, ADDRESS = range(4)
 
 SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT = range(4, 11)
 
-COMMENTS, DELIVERY_ADDRESS, CHANGE_ADDRESS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(11, 18)
+COMMENTS, DELIVERY_ADDRESS, CHANGE_ADDRESS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(11, 19)
 
 
 def start(update, context):
@@ -313,7 +313,7 @@ def delivery_address(update, context):
     if update.message.text != 'Назад':
         context.user_data['comments'] = update.message.text
     user = get_user(str(context.user_data['user_id']))
-    reply_text = 'Проверьте адрес доставки.\n{address}'.format(user)
+    reply_text = 'Проверьте адрес доставки.\n{address}'.format(**user)
     reply_keyboard = [
         ['Подтвердить', 'Изменить'],
         ['Назад', 'Главное меню'],
@@ -433,9 +433,15 @@ def complete_order(update, context):
         '''ДОБАВИТЬ НОВЫЙ АДРЕС В БАЗУ'''
     user = update.message.from_user
     logger.info("User %s completed order.", user.first_name)
+    reply_keyboard = [
+        ['Cобрать новый торт', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Заказ отправлен! Ожидайте звонка оператора!',
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        ),
     )
     return ConversationHandler.END
 
@@ -601,27 +607,30 @@ def main():
                 MessageHandler(Filters.text, delivery_date),
             ],
             DELIVERY_DATE: [
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.regex('^Назад$'), delivery_address),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, delivery_time),
             ],
             DELIVERY_TIME: [
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.regex('^Назад$'), delivery_date),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, promocode),
             ],
             PROMOCODE: [
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.regex('^Назад$'), delivery_time),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text | Filters.regex('^Пропустить$'), order_details),
             ],
             CONFIRM: [
+                MessageHandler(Filters.regex('^Назад$'), promocode),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Заказать торт$'), order_confirm),
-                MessageHandler(Filters.regex('^Изменить условия$'), comments),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
                 MessageHandler(Filters.text, incorrect_input),
             ],
             COMPLETE: [
+                MessageHandler(Filters.regex('^Назад$'), order_details),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Отправить заказ$'), complete_order),
-                MessageHandler(Filters.regex('^Изменить условия$'), comments),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
                 MessageHandler(Filters.text, incorrect_input),
             ],
         },

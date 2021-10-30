@@ -4,6 +4,21 @@
     "surname": "S",
     "phone": "+79852797907",
     "address": "34",
-    "orders": []
+    "orders": [
+      {
+        "order_id": 1,
+        "levels": "2 уровня",
+        "form": "Круг",
+        "topping": "Черничный сироп",
+        "berries": "Пропустить",
+        "decor": "Пропустить",
+        "text": "Пропустить",
+        "comment": "Пропустить",
+        "delivery_date": "12",
+        "delivery_time": "12",
+        "status": "заявка обрабатывается",
+        "cost": "1500"
+      }
+    ]
   }
 }
