@@ -389,19 +389,23 @@ def decline(update, _):
 
 
 def show_orders(update, context):
-    reply_keyboard = [['Собрать торт', 'Мои заказы']]
+    reply_markup=ReplyKeyboardMarkup(
+        [['Собрать торт', 'Мои заказы']],
+        resize_keyboard=True,
+    )
     user = get_user(str(context.user_data['user_id']))
     if user.get('orders'):
         update.message.reply_text('На данный момент у вас такие заказы:')
         for order in get_orders(context.user_data['user_id']):
-            update.message.reply_text('\n'.join(order))
+            update.message.reply_text(
+                '\n'.join(order),
+                reply_markup=reply_markup,
+            )
     else:
-        update.message.reply_text('У вас еще не было заказов.')
-        
-    reply_keyboard = [['Собрать торт', 'Мои заказы']]
-    update.message.reply_text(
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
-    )
+        update.message.reply_text(
+            'У вас еще не было заказов.',
+            reply_markup=reply_markup,
+        )
     return REGISTER
 
 
