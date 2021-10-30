@@ -408,7 +408,7 @@ def main():
 
     DEBUG = env.bool('DEBUG', False)
 
-    TG_BOT_TOKEN = env('TG_BOT_TOKEN_WORK') if DEBUG else env('TG_BOT_TOKEN_ORIGINAL')
+    TG_BOT_TOKEN = env('TG_BOT_TOKEN_WORK') if DEBUG else env('TG_BOT_TOKEN')
 
     updater = Updater(token=TG_BOT_TOKEN)
     dispatcher = updater.dispatcher
