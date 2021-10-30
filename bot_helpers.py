@@ -4,7 +4,7 @@ import json
 
 
 def read_db():
-    if Path('bakecake_db.json').is_file():
+    if Path('bakes.json').is_file():
         with open('bakes.json', 'r', encoding='utf-8') as db_file:
             try:
                 db = json.load(db_file)
@@ -65,10 +65,13 @@ def add_user(context_data):
         'address': context_data['user_address'],
         'orders': [],
     }
-    with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
-        users = json.load(bakes_file)
-        if str(user_id) not in users.keys():
-            users.update({ user_id: user })
+    if Path('bakes.json').is_file():
+        with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
+            users = json.load(bakes_file)
+            if str(user_id) not in users.keys():
+                users.update({ user_id: user })
+    else:
+        users = {user_id: user}
     with open('bakes.json', 'w', encoding='utf-8') as bakes_file:
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
 
