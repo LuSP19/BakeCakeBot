@@ -406,7 +406,11 @@ def main():
     env = Env()
     env.read_env()
 
-    updater = Updater(token=env('TG_BOT_TOKEN'))
+    DEBUG = env.bool('DEBUG', False)
+
+    TG_BOT_TOKEN = env('TG_BOT_TOKEN_WORK') if DEBUG else env('TG_BOT_TOKEN_ORIGINAL')
+
+    updater = Updater(token=TG_BOT_TOKEN)
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
