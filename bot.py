@@ -551,7 +551,7 @@ def main():
             ],
             PROMOCODE: [
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
-                MessageHandler(Filters.text & Filters.regex('^Пропустить$'), order_details),
+                MessageHandler(Filters.text | Filters.regex('^Пропустить$'), order_details),
             ],
             CONFIRM: [
                 MessageHandler(Filters.regex('^Заказать торт$'), order_confirm),
