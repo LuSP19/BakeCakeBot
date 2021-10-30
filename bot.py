@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 REGISTER, CONTACT_CONFIRM, PHONE, ADDRESS = range(4)
 
-SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT, INPUT_TEXT = range(4, 12)
+SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT = range(4, 11)
 
-COMMENTS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(12, 18)
+COMMENTS, DELIVERY_ADDRESS, CHANGE_ADDRESS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(11, 18)
 
 
 def start(update, context):
@@ -243,7 +243,7 @@ def text(update, context):
     if update.message.text != 'Назад':
         context.user_data['decor'] = update.message.text
     reply_keyboard = [
-        ['Добавить надпись', 'Пропустить'],
+        ['Пропустить'],
         ['Назад', 'Главное меню'],
     ]
     update.message.reply_text(
@@ -251,25 +251,10 @@ def text(update, context):
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
             resize_keyboard=True,
-        ),
-    )
-    return TEXT
-
-
-def input_text(update, context):
-    reply_keyboard = [
-        ['Пропустить'],
-        ['Назад', 'Главное меню'],
-    ]
-    update.message.reply_text(
-        'Введите надпись',
-        reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard,
-            resize_keyboard=True,
             input_field_placeholder='С Днем рождения!',
         ),
     )
-    return INPUT_TEXT
+    return TEXT
 
 
 def cake_confirm(update, context):
@@ -310,7 +295,10 @@ def comments(update, context):
     if context.user_data.get('delivery_time'):
         del context.user_data['delivery_time']
 
-    reply_keyboard = [['Пропустить','Начать собирать заново']]
+    reply_keyboard = [
+        ['Пропустить'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Можете оставить комментарий к заказу',
         reply_markup=ReplyKeyboardMarkup(
@@ -321,27 +309,64 @@ def comments(update, context):
     return COMMENTS
 
 
+def delivery_address(update, context):
+    if update.message.text != 'Назад':
+        context.user_data['comments'] = update.message.text
+    user = get_user(str(context.user_data['user_id']))
+    reply_text = 'Проверьте адрес доставки.\n{address}'.format(user)
+    reply_keyboard = [
+        ['Подтвердить', 'Изменить'],
+        ['Назад', 'Главное меню'],
+    ]
+    update.message.reply_text(
+        reply_text,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        ),
+    )
+    return DELIVERY_ADDRESS
+
+
+def change_address(update, context):
+    reply_text = 'Введите новый адрес.'
+    reply_keyboard = [['Назад', 'Главное меню']]
+    update.message.reply_text(
+        reply_text,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+            input_field_placeholder='ул. Пушкина, д. Колотушкина',
+        ),
+    )
+    return CHANGE_ADDRESS
+
+
 def delivery_date(update, context):
-    context.user_data['comments'] = update.message.text
-    reply_keyboard = [['Начать собирать заново']]
+    if update.message.text != 'Назад':
+        context.user_data['changed_address'] = update.message.text
+    reply_keyboard = [['Назад', 'Главное меню']]
     update.message.reply_text(
         'Укажите дату доставки',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
             resize_keyboard=True,
+            input_field_placeholder='дд.мм.гггг',
         ),
     )
     return DELIVERY_DATE
 
 
 def delivery_time(update, context):
-    context.user_data['delivery_date'] = update.message.text
-    reply_keyboard = [['Начать собирать заново']]
+    if update.message.text != 'Назад':
+        context.user_data['delivery_date'] = update.message.text
+    reply_keyboard = [['Назад', 'Главное меню']]
     update.message.reply_text(
         'Укажите время доставки',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
             resize_keyboard=True,
+            input_field_placeholder='чч:мм',
         ),
     )
     return DELIVERY_TIME
@@ -349,7 +374,10 @@ def delivery_time(update, context):
 
 def promocode(update, context):
     context.user_data['delivery_time'] = update.message.text
-    reply_keyboard = [['Пропустить', 'Начать собирать заново']]
+    reply_keyboard = [
+        ['Пропустить'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Введите промокод',
         reply_markup=ReplyKeyboardMarkup(
@@ -363,7 +391,10 @@ def promocode(update, context):
 def order_details(update, context):
     # Начало ветки "Проверка и отправка заказа"
     context.user_data['promocode'] = update.message.text
-    reply_keyboard = [['Заказать торт', 'Начать собирать заново', 'Изменить условия']]
+    reply_keyboard = [
+        ['Заказать торт'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Все готово! Нажмите "Заказать торт", чтобы увидеть стоимость.',
         reply_markup=ReplyKeyboardMarkup(
@@ -377,12 +408,16 @@ def order_details(update, context):
 def order_confirm(update, context):
     for key, value in context.user_data.items():
         logger.info('%s - %s', key, value)
+
     cost = count_cost(context.user_data['levels'], context.user_data['form'],
                       context.user_data['topping'], context.user_data['berries'],
                       context.user_data['decor'], context.user_data['text'])
     context.user_data['cost'] = cost
     add_order(context.user_data)
-    reply_keyboard = [['Отправить заказ', 'Начать собирать заново', 'Изменить условия']]
+    reply_keyboard = [
+        ['Отправить заказ'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         f'Стоимость торта {cost}',
         reply_markup=ReplyKeyboardMarkup(
@@ -394,6 +429,8 @@ def order_confirm(update, context):
 
 
 def complete_order(update, context):
+    if 'changed_address' in context.user_data:
+        '''ДОБАВИТЬ НОВЫЙ АДРЕС В БАЗУ'''
     user = update.message.from_user
     logger.info("User %s completed order.", user.first_name)
     update.message.reply_text(
@@ -439,7 +476,7 @@ def show_orders(update, context):
     return REGISTER
 
 
-def cancel(update, _):
+def exit(update, _):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
@@ -501,7 +538,6 @@ def main():
                 MessageHandler(Filters.regex('^Назад$'), levels),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Квадрат$|^Круг$|^Прямоугольник$'), topping),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             TOPPING: [
                 MessageHandler(Filters.regex('^Назад$'), form),
@@ -509,36 +545,40 @@ def main():
                 MessageHandler(Filters.regex('^Без топпинга$|^Белый соус$|^Карамельный сироп$'), berries),
                 MessageHandler(Filters.regex('^Кленовый сироп$|^Клубничный сироп$'), berries),
                 MessageHandler(Filters.regex('^Черничный сироп$|^Молочный шоколад$'), berries),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             BERRIES: [
                 MessageHandler(Filters.regex('^Назад$'), topping),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Ежевика$|^Малина$|^Голубика$'), decor),
                 MessageHandler(Filters.regex('^Клубника$|^Пропустить$'), decor),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             DECOR: [
                 MessageHandler(Filters.regex('^Назад$'), berries),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Фисташки$|^Безе$|^Фундук$'), text),
                 MessageHandler(Filters.regex('^Пекан$|^Маршмеллоу$|^Марципан$|^Пропустить$'), text),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             TEXT: [
                 MessageHandler(Filters.regex('^Назад$'), decor),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
-                MessageHandler(Filters.regex('^Добавить надпись$'), input_text),
                 MessageHandler(Filters.regex('^Пропустить$'), cake_confirm),
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
-            ],
-            INPUT_TEXT: [
-                MessageHandler(Filters.regex('^Назад$'), decor),
-                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, cake_confirm),
             ],
             COMMENTS: [
-                MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.regex('^Назад$'), cake_confirm),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
+                MessageHandler(Filters.regex('^Пропустить$'), delivery_address),
+                MessageHandler(Filters.text, delivery_address),
+            ],
+            DELIVERY_ADDRESS: [
+                MessageHandler(Filters.regex('^Назад$'), comments),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
+                MessageHandler(Filters.regex('^Изменить$'), change_address),
+                MessageHandler(Filters.regex('^Подтвердить$'), delivery_date),
+            ],
+            CHANGE_ADDRESS: [
+                MessageHandler(Filters.regex('^Назад$'), delivery_address),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, delivery_date),
             ],
             DELIVERY_DATE: [
@@ -564,7 +604,7 @@ def main():
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
         },
-        fallbacks=[CommandHandler('cancel', cancel)],
+        fallbacks=[CommandHandler('exit', exit)],
         name="my_conversation",
         allow_reentry=True
     )
