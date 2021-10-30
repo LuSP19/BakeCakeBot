@@ -31,18 +31,25 @@ def start(update, context):
     user = get_user(str(update.message.from_user.id))
     context.user_data['user_id'] = update.message.from_user.id
     if user:
-        reply_keyboard = [['Собрать торт', 'Мои заказы']]
-        reply_text = 'Вы в главном меню.'
+        reply_text = 'Приветствую! Вы в главном меню.'
+        main_menu(update, context, reply_text)
     else:
-        reply_keyboard = [['Принять', 'Отклонить']]
-        reply_text = (
+        update.message.reply_text(
             'Подтвердите согласие на обработку персональных данных.\n'
-            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-'
-        )        
+            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
+            reply_markup=ReplyKeyboardMarkup(
+                [['Принять', 'Отклонить']],
+                resize_keyboard=True,
+            ),
+        )
+    return REGISTER
+
+
+def main_menu(update, context, reply_text='Вы в главном меню'):
     update.message.reply_text(
         reply_text,
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard,
+            [['Собрать торт', 'Мои заказы']],
             resize_keyboard=True,
         ),
     )
@@ -57,37 +64,39 @@ def phone(update, context):
         del context.user_data['phone_number']
 
     phone_request_button = KeyboardButton('Передать контакт', request_contact=True)
-    reply_keyboard = [[phone_request_button]]
     update.message.reply_text(
         'Введите контактный номер телефона',
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard,
+            [[phone_request_button, 'Назад']],
             resize_keyboard=True,
+            input_field_placeholder='8-999-999-9999',
         ),
     )
     return PHONE
 
 
 def correct_phone(update, context):
-    if update.message.contact:
-        phone_number = update.message.contact.phone_number
-    else:
-        phone_number = update.message.text
-    context.user_data['phone_number'] = phone_number
-    logger.info('User %s points phone_number %s', update.message.from_user.id, phone_number)
+    if update.message.text != 'Назад':
+        if update.message.contact:
+            phone_number = update.message.contact.phone_number
+        else:
+            phone_number = update.message.text
+        context.user_data['phone_number'] = phone_number
+        logger.info('User %s points phone_number %s', update.message.from_user.id, phone_number)
     update.message.reply_text(
         'Введите адрес доставки',
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=ReplyKeyboardMarkup(
+            [['Назад']],
+            resize_keyboard=True,
+            input_field_placeholder='ул. Пушкина, д. Колотушкина',
+        ),
     )
     return ADDRESS
 
 
 def incorrect_phone(update, context):
     update.message.reply_text(
-        'Пожалуйста, введите номер в формате: "8" и 10 цифр',
-        reply_markup=ReplyKeyboardRemove(
-            input_field_placeholder='8-999-999-9999',
-        ),
+        'Пожалуйста, введите номер в формате: "8" и 10 цифр'
     )
     return PHONE
 
@@ -98,13 +107,12 @@ def success_address(update, context):
     phone_number = context.user_data['phone_number']
     logger.info('User %s points address %s', update.message.from_user.id, user_address)
 
-    reply_keyboard = [['Все верно', 'Изменить']]
     update.message.reply_text(
         'Проверьте введенные данные.\n'
         f'Номер телефона: {phone_number}\n'
         f'Адрес: {user_address}',
         reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard,
+            [['Все верно', 'Назад']],
             resize_keyboard=True,
         )
     )
@@ -121,16 +129,11 @@ def reg_confirm(update, context):
 
     add_user(context.user_data)
 
-    reply_keyboard = [['Собрать торт']]
-    logger.info('Added %s with address %s abd phone number %s', user, user_address, phone_number)
-    update.message.reply_text(
-        'Поздравляем! Теперь вы можете выбрать компоненты торта.',
-        reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard,
-            resize_keyboard=True,
-        ),
-    )
-    return SET_CAKE_CONFIRM
+    logger.info('Added %s with address %s and phone number %s', user, user_address, phone_number)
+
+    reply_text = 'Поздравляем! Теперь вы можете выбрать компоненты торта.'
+    main_menu(update, context, reply_text)
+    return REGISTER
 
 
 def levels(update, context):
@@ -148,7 +151,10 @@ def levels(update, context):
     elif context.user_data.get('text'):
         del context.user_data['text']
 
-    reply_keyboard = [['1 уровень', '2 уровня', '3 уровня']]
+    reply_keyboard = [
+        ['1 уровень', '2 уровня', '3 уровня'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Количество уровней',
         reply_markup=ReplyKeyboardMarkup(
@@ -160,8 +166,12 @@ def levels(update, context):
 
 
 def form(update, context):
-    context.user_data['levels'] = update.message.text
-    reply_keyboard = [['Квадрат', 'Круг', 'Прямоугольник'], ['Начать собирать заново']]
+    if update.message.text != 'Назад':
+        context.user_data['levels'] = update.message.text
+    reply_keyboard = [
+        ['Квадрат', 'Круг', 'Прямоугольник'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Форма',
         reply_markup=ReplyKeyboardMarkup(
@@ -173,11 +183,13 @@ def form(update, context):
     
 
 def topping(update, context):
-    context.user_data['form'] = update.message.text
+    if update.message.text != 'Назад':
+        context.user_data['form'] = update.message.text
     reply_keyboard = [
         ['Без топпинга', 'Белый соус', 'Карамельный сироп'],
-        ['Кленовый сироп', 'Клубничный сироп', 'Черничный сироп', 'Молочный шоколад'],
-        ['Начать собирать заново'],
+        ['Кленовый сироп', 'Клубничный сироп'], 
+        ['Черничный сироп', 'Молочный шоколад'],
+        ['Назад', 'Главное меню'],
     ]
     update.message.reply_text(
         'Топпинг',
@@ -190,12 +202,13 @@ def topping(update, context):
 
 
 def berries(update, context):
-    context.user_data['topping'] = update.message.text
+    if update.message.text != 'Назад':
+        context.user_data['topping'] = update.message.text
     reply_keyboard = [
         ['Ежевика', 'Малина'],
         ['Голубика', 'Клубника'],
         ['Пропустить'],
-        ['Начать собирать заново'],
+        ['Назад', 'Главное меню'],
     ]
     update.message.reply_text(
         'Ягоды',
@@ -208,12 +221,13 @@ def berries(update, context):
 
 
 def decor(update, context):
-    context.user_data['berries'] = update.message.text
+    if update.message.text != 'Назад':
+        context.user_data['berries'] = update.message.text
     reply_keyboard = [
         ['Фисташки', 'Безе', 'Фундук'],
         ['Пекан', 'Маршмеллоу', 'Марципан'],
         ['Пропустить'],
-        ['Начать собирать заново'],
+        ['Назад', 'Главное меню'],
     ]
     update.message.reply_text(
         'Декор',
@@ -226,9 +240,11 @@ def decor(update, context):
 
 
 def text(update, context):
-    context.user_data['decor'] = update.message.text
+    if update.message.text != 'Назад':
+        context.user_data['decor'] = update.message.text
     reply_keyboard = [
-        ['Добавить надпись', 'Пропустить', 'Начать собирать заново']
+        ['Добавить надпись', 'Пропустить'],
+        ['Назад', 'Главное меню'],
     ]
     update.message.reply_text(
         'Мы можем разместить на торте любую надпись, например: «С днем рождения!»',
@@ -241,9 +257,17 @@ def text(update, context):
 
 
 def input_text(update, context):
+    reply_keyboard = [
+        ['Пропустить'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         'Введите надпись',
-        reply_markup=ReplyKeyboardRemove(),
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+            input_field_placeholder='С Днем рождения!',
+        ),
     )
     return INPUT_TEXT
 
@@ -257,7 +281,10 @@ def cake_confirm(update, context):
     decor = context.user_data['decor']
     text = context.user_data['text']
 
-    reply_keyboard = [['Все верно', 'Изменить']]
+    reply_keyboard = [
+        ['Все верно', 'Изменить'],
+        ['Назад', 'Главное меню'],
+    ]
     update.message.reply_text(
         f'Проверьте введенные данные.\n'
         f'Количество уровней: {levels}\n'
@@ -383,7 +410,10 @@ def decline(update, _):
             'К сожалению, без согласия на обработку ПД вы не сможете сделать заказ\n\n'
             'Подтвердите солгасие на обработку персональных данных.\n'
             'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard)
+            reply_markup=ReplyKeyboardMarkup(
+                reply_keyboard,
+                resize_keyboard=True,
+            )
         )
     return REGISTER
 
@@ -442,6 +472,7 @@ def main():
             CONTACT_CONFIRM: [
                 MessageHandler(Filters.regex('^Изменить$'), phone),
                 MessageHandler(Filters.regex('^Все верно$'), reg_confirm),
+                MessageHandler(Filters.regex('^Назад$'), correct_phone),
             ],
             PHONE: [
                 MessageHandler(Filters.contact, correct_phone),
@@ -449,44 +480,61 @@ def main():
                     Filters.regex('^\+?\d{1,3}?( |-)?\d{3}( |-)?\d{3}( |-)?\d{2}( |-)?\d{2}$'),
                     correct_phone,
                 ),
+                MessageHandler(Filters.regex('^Назад$'), start),
                 MessageHandler(Filters.text, incorrect_phone),
             ],
             ADDRESS: [
+                MessageHandler(Filters.regex('^Назад$'), phone),
                 MessageHandler(Filters.text, success_address),
             ],
             SET_CAKE_CONFIRM: [
+                MessageHandler(Filters.regex('^Назад$'), text),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Собрать торт$|^Изменить$'), levels),
                 MessageHandler(Filters.regex('^Все верно$'), comments),
             ],
             LEVELS: [
+                MessageHandler(Filters.regex('^Назад$|^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^1 уровень$|^2 уровня$|^3 уровня$'), form),
             ],
             FORM: [
+                MessageHandler(Filters.regex('^Назад$'), levels),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Квадрат$|^Круг$|^Прямоугольник$'), topping),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             TOPPING: [
+                MessageHandler(Filters.regex('^Назад$'), form),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Без топпинга$|^Белый соус$|^Карамельный сироп$'), berries),
                 MessageHandler(Filters.regex('^Кленовый сироп$|^Клубничный сироп$'), berries),
                 MessageHandler(Filters.regex('^Черничный сироп$|^Молочный шоколад$'), berries),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             BERRIES: [
+                MessageHandler(Filters.regex('^Назад$'), topping),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Ежевика$|^Малина$|^Голубика$'), decor),
                 MessageHandler(Filters.regex('^Клубника$|^Пропустить$'), decor),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             DECOR: [
+                MessageHandler(Filters.regex('^Назад$'), berries),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Фисташки$|^Безе$|^Фундук$'), text),
                 MessageHandler(Filters.regex('^Пекан$|^Маршмеллоу$|^Марципан$|^Пропустить$'), text),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             TEXT: [
+                MessageHandler(Filters.regex('^Назад$'), decor),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Добавить надпись$'), input_text),
                 MessageHandler(Filters.regex('^Пропустить$'), cake_confirm),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
             ],
             INPUT_TEXT: [
+                MessageHandler(Filters.regex('^Назад$'), decor),
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, cake_confirm),
             ],
             COMMENTS: [
