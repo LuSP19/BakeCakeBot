@@ -439,6 +439,17 @@ def show_orders(update, context):
     return REGISTER
 
 
+def incorrect_input(update, context):
+    update.message.reply_text(
+        'Я вас не понимаю \U0001F61F\n\n'
+        'Пожалуйста, воспользуйтесь кнопками в нижнем меню.\n'
+        'Если они у вас не отображаются, просто нажмите на эту\n'
+        'кнопку в поле ввода:'
+    )
+    with open('pointer.jpeg', 'rb') as pointer_file:
+        update.message.reply_photo(pointer_file)
+
+
 def cancel(update, _):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
@@ -468,11 +479,13 @@ def main():
                 MessageHandler(Filters.regex('^Отклонить$'), decline),
                 MessageHandler(Filters.regex('^Собрать торт$'), levels),
                 MessageHandler(Filters.regex('^Мои заказы$'), show_orders),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             CONTACT_CONFIRM: [
                 MessageHandler(Filters.regex('^Изменить$'), phone),
                 MessageHandler(Filters.regex('^Все верно$'), reg_confirm),
                 MessageHandler(Filters.regex('^Назад$'), correct_phone),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             PHONE: [
                 MessageHandler(Filters.contact, correct_phone),
@@ -492,16 +505,19 @@ def main():
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Собрать торт$|^Изменить$'), levels),
                 MessageHandler(Filters.regex('^Все верно$'), comments),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             LEVELS: [
                 MessageHandler(Filters.regex('^Назад$|^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^1 уровень$|^2 уровня$|^3 уровня$'), form),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             FORM: [
                 MessageHandler(Filters.regex('^Назад$'), levels),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Квадрат$|^Круг$|^Прямоугольник$'), topping),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             TOPPING: [
                 MessageHandler(Filters.regex('^Назад$'), form),
@@ -510,6 +526,7 @@ def main():
                 MessageHandler(Filters.regex('^Кленовый сироп$|^Клубничный сироп$'), berries),
                 MessageHandler(Filters.regex('^Черничный сироп$|^Молочный шоколад$'), berries),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             BERRIES: [
                 MessageHandler(Filters.regex('^Назад$'), topping),
@@ -517,6 +534,7 @@ def main():
                 MessageHandler(Filters.regex('^Ежевика$|^Малина$|^Голубика$'), decor),
                 MessageHandler(Filters.regex('^Клубника$|^Пропустить$'), decor),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             DECOR: [
                 MessageHandler(Filters.regex('^Назад$'), berries),
@@ -524,6 +542,7 @@ def main():
                 MessageHandler(Filters.regex('^Фисташки$|^Безе$|^Фундук$'), text),
                 MessageHandler(Filters.regex('^Пекан$|^Маршмеллоу$|^Марципан$|^Пропустить$'), text),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             TEXT: [
                 MessageHandler(Filters.regex('^Назад$'), decor),
@@ -531,6 +550,7 @@ def main():
                 MessageHandler(Filters.regex('^Добавить надпись$'), input_text),
                 MessageHandler(Filters.regex('^Пропустить$'), cake_confirm),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             INPUT_TEXT: [
                 MessageHandler(Filters.regex('^Назад$'), decor),
@@ -557,11 +577,13 @@ def main():
                 MessageHandler(Filters.regex('^Заказать торт$'), order_confirm),
                 MessageHandler(Filters.regex('^Изменить условия$'), comments),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
             COMPLETE: [
                 MessageHandler(Filters.regex('^Отправить заказ$'), complete_order),
                 MessageHandler(Filters.regex('^Изменить условия$'), comments),
                 MessageHandler(Filters.regex('^Начать собирать заново$'), levels),
+                MessageHandler(Filters.text, incorrect_input),
             ],
         },
         fallbacks=[CommandHandler('cancel', cancel)],
