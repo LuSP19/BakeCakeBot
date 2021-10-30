@@ -497,6 +497,7 @@ def main():
         },
         fallbacks=[CommandHandler('cancel', cancel)],
         name="my_conversation",
+        allow_reentry=True
     )
 
     dispatcher.add_handler(conv_handler)
