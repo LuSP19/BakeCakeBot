@@ -415,7 +415,6 @@ def order_confirm(update, context):
                       context.user_data['topping'], context.user_data['berries'],
                       context.user_data['decor'], context.user_data['text'])
     context.user_data['cost'] = cost
-    add_order(context.user_data)
     reply_keyboard = [
         ['Отправить заказ'],
         ['Назад', 'Главное меню'],
@@ -433,6 +432,7 @@ def order_confirm(update, context):
 def complete_order(update, context):
     if 'changed_address' in context.user_data:
         '''ДОБАВИТЬ НОВЫЙ АДРЕС В БАЗУ'''
+    add_order(context.user_data)
     user = update.message.from_user
     logger.info("User %s completed order.", user.first_name)
     reply_keyboard = [
