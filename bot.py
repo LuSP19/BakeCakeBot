@@ -31,22 +31,20 @@ def start(update, context):
     user = get_user(str(update.message.from_user.id))
     context.user_data['user_id'] = update.message.from_user.id
     if user:
-        if user.get('orders'):
-            reply_keyboard = [['Собрать торт', 'Заказы']]
-            reply_text = 'Соберите торт или посмотрите свои заказы'
-        else:
-            reply_keyboard = [['Собрать торт']]
-            reply_text = 'Соберите торт'
+        reply_keyboard = [['Собрать торт', 'Мои заказы']]
+        reply_text = 'Вы в главном меню.'
     else:
         reply_keyboard = [['Принять', 'Отклонить']]
         reply_text = (
             'Подтвердите согласие на обработку персональных данных.\n'
             'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-'
-        )
-        
+        )        
     update.message.reply_text(
         reply_text,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        ),
     )
     return REGISTER
 
@@ -62,7 +60,10 @@ def phone(update, context):
     reply_keyboard = [[phone_request_button]]
     update.message.reply_text(
         'Введите контактный номер телефона',
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        ),
     )
     return PHONE
 
@@ -102,7 +103,10 @@ def success_address(update, context):
         'Проверьте введенные данные.\n'
         f'Номер телефона: {phone_number}\n'
         f'Адрес: {user_address}',
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard)
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        )
     )
     return CONTACT_CONFIRM
 
@@ -121,7 +125,10 @@ def reg_confirm(update, context):
     logger.info('Added %s with address %s abd phone number %s', user, user_address, phone_number)
     update.message.reply_text(
         'Поздравляем! Теперь вы можете выбрать компоненты торта.',
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard),
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard,
+            resize_keyboard=True,
+        ),
     )
     return SET_CAKE_CONFIRM
 
@@ -146,7 +153,7 @@ def levels(update, context):
         'Количество уровней',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return LEVELS
@@ -159,7 +166,7 @@ def form(update, context):
         'Форма',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return FORM
@@ -176,7 +183,7 @@ def topping(update, context):
         'Топпинг',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return TOPPING
@@ -194,7 +201,7 @@ def berries(update, context):
         'Ягоды',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return BERRIES
@@ -212,7 +219,7 @@ def decor(update, context):
         'Декор',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return DECOR
@@ -227,7 +234,7 @@ def text(update, context):
         'Мы можем разместить на торте любую надпись, например: «С днем рождения!»',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return TEXT
@@ -261,7 +268,7 @@ def cake_confirm(update, context):
         f'Текст: {text}\n',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return SET_CAKE_CONFIRM
@@ -281,7 +288,7 @@ def comments(update, context):
         'Можете оставить комментарий к заказу',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return COMMENTS
@@ -294,7 +301,7 @@ def delivery_date(update, context):
         'Укажите дату доставки',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return DELIVERY_DATE
@@ -307,7 +314,7 @@ def delivery_time(update, context):
         'Укажите время доставки',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return DELIVERY_TIME
@@ -320,7 +327,7 @@ def promocode(update, context):
         'Введите промокод',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return PROMOCODE
@@ -334,7 +341,7 @@ def order_details(update, context):
         'Все готово! Нажмите "Заказать торт", чтобы увидеть стоимость.',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return CONFIRM
@@ -353,7 +360,7 @@ def order_confirm(update, context):
         f'Стоимость торта {cost}',
         reply_markup=ReplyKeyboardMarkup(
             reply_keyboard,
-            resize_keyboard=True
+            resize_keyboard=True,
         ),
     )
     return COMPLETE
@@ -382,10 +389,16 @@ def decline(update, _):
 
 
 def show_orders(update, context):
-    update.message.reply_text('На данный момент у вас такие заказы:')
-    for order in get_orders(context.user_data['user_id']):
-        update.message.reply_text('\n'.join(order))
-    reply_keyboard = [['Собрать торт', 'Заказы']]
+    reply_keyboard = [['Собрать торт', 'Мои заказы']]
+    user = get_user(str(context.user_data['user_id']))
+    if user.get('orders'):
+        update.message.reply_text('На данный момент у вас такие заказы:')
+        for order in get_orders(context.user_data['user_id']):
+            update.message.reply_text('\n'.join(order))
+    else:
+        update.message.reply_text('У вас еще не было заказов.')
+        
+    reply_keyboard = [['Собрать торт', 'Мои заказы']]
     update.message.reply_text(
         reply_markup=ReplyKeyboardMarkup(reply_keyboard),
     )
@@ -420,7 +433,7 @@ def main():
                 MessageHandler(Filters.regex('^Принять$'), phone),
                 MessageHandler(Filters.regex('^Отклонить$'), decline),
                 MessageHandler(Filters.regex('^Собрать торт$'), levels),
-                MessageHandler(Filters.regex('^Заказы$'), show_orders),
+                MessageHandler(Filters.regex('^Мои заказы$'), show_orders),
             ],
             CONTACT_CONFIRM: [
                 MessageHandler(Filters.regex('^Изменить$'), phone),
