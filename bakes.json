@@ -18,6 +18,20 @@
         "delivery_time": "12",
         "status": "заявка обрабатывается",
         "cost": "1500"
+      },
+      {
+        "order_id": 2,
+        "levels": "2 уровня",
+        "form": "Круг",
+        "topping": "Черничный сироп",
+        "berries": "Пропустить",
+        "decor": "Пропустить",
+        "text": "Пропустить",
+        "comment": "Пропустить",
+        "delivery_date": "qw",
+        "delivery_time": "qw",
+        "status": "заявка обрабатывается",
+        "cost": "1500"
       }
     ]
   }

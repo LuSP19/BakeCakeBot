@@ -24,7 +24,9 @@ REGISTER, CONTACT_CONFIRM, PHONE, ADDRESS = range(4)
 
 SET_CAKE_CONFIRM, LEVELS, FORM, TOPPING, BERRIES, DECOR, TEXT = range(4, 11)
 
-COMMENTS, DELIVERY_ADDRESS, CHANGE_ADDRESS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE, CONFIRM, COMPLETE = range(11, 19)
+COMMENTS, DELIVERY_ADDRESS, CHANGE_ADDRESS, DELIVERY_DATE, DELIVERY_TIME, PROMOCODE = range(11, 17)
+
+DETAILS, CONFIRM, COMPLETE = range(17, 20)
 
 
 def start(update, context):
@@ -402,7 +404,7 @@ def order_details(update, context):
             resize_keyboard=True,
         ),
     )
-    return CONFIRM
+    return DETAILS
 
 
 def order_confirm(update, context):
@@ -425,7 +427,7 @@ def order_confirm(update, context):
             resize_keyboard=True,
         ),
     )
-    return COMPLETE
+    return CONFIRM
 
 
 def complete_order(update, context):
@@ -434,7 +436,7 @@ def complete_order(update, context):
     user = update.message.from_user
     logger.info("User %s completed order.", user.first_name)
     reply_keyboard = [
-        ['Cобрать новый торт', 'Главное меню'],
+        ['Главное меню'],
     ]
     update.message.reply_text(
         'Заказ отправлен! Ожидайте звонка оператора!',
@@ -443,7 +445,7 @@ def complete_order(update, context):
             resize_keyboard=True,
         ),
     )
-    return ConversationHandler.END
+    return COMPLETE
 
 
 def decline(update, _):
@@ -621,16 +623,20 @@ def main():
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text | Filters.regex('^Пропустить$'), order_details),
             ],
-            CONFIRM: [
+            DETAILS: [
                 MessageHandler(Filters.regex('^Назад$'), promocode),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Заказать торт$'), order_confirm),
                 MessageHandler(Filters.text, incorrect_input),
             ],
-            COMPLETE: [
+            CONFIRM: [
                 MessageHandler(Filters.regex('^Назад$'), order_details),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.regex('^Отправить заказ$'), complete_order),
+                MessageHandler(Filters.text, incorrect_input),
+            ],
+            COMPLETE: [
+                MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(Filters.text, incorrect_input),
             ],
         },
