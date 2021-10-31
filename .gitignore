@@ -116,3 +116,7 @@ dmypy.json
 # Work files
 test*.py
 conversationbot
+
+
+# MacOS System Files
+.DS_Store
