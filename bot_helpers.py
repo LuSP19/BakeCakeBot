@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import json
@@ -138,7 +139,12 @@ def count_cost(levels, form, topping, berries, decor, text, promocode, delivery_
     if promocode == 'devman':
         cost -= cost/5
 
-    return str(cost)
+    delivery_datetime = datetime.strptime(f'{delivery_date} {delivery_time}', '%d.%m.%Y %H:%M')
+    time_for_delivery = datetime.now() - delivery_datetime
+    if abs(divmod(time_for_delivery.total_seconds(), 3600)[0]) <= 24:
+        cost += cost/5
+
+    return str(int(cost))
 
 
 def get_orders(user_id):
