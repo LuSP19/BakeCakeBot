@@ -429,7 +429,9 @@ def order_confirm(update, context):
 
     cost = count_cost(context.user_data['levels'], context.user_data['form'],
                       context.user_data['topping'], context.user_data['berries'],
-                      context.user_data['decor'], context.user_data['text'])
+                      context.user_data['decor'], context.user_data['text'],
+                      context.user_data['promocode'], context.user_data['delivery_date'],
+                      context.user_data['delivery_time'])
     context.user_data['cost'] = cost
     reply_keyboard = [
         ['Отправить заказ'],

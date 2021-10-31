@@ -81,7 +81,7 @@ def add_user(context_data):
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
 
 
-def count_cost(levels, form, topping, berries, decor, text):
+def count_cost(levels, form, topping, berries, decor, text, promocode, delivery_date, delivery_time):
     cost = 0
     if levels[0] == '1':
         cost += 400
@@ -134,6 +134,9 @@ def count_cost(levels, form, topping, berries, decor, text):
 
     if text != 'Пропустить':
         cost += 500
+
+    if promocode == 'devman':
+        cost -= cost/5
 
     return str(cost)
 
