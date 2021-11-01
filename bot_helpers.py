@@ -1,24 +1,18 @@
+import json
 from datetime import datetime
 from pathlib import Path
 
-import json
-
-
-def read_db():
-    if Path('bakes.json').is_file():
-        with open('bakes.json', 'r', encoding='utf-8') as db_file:
-            try:
-                db = json.load(db_file)
-            except:
-    	        return None
-        return db
-
 
 def get_user(user_id):
-    db = read_db()
-    if db:
-        return db.get(user_id)
-    return None
+    user_id = str(user_id)
+    if Path('bakes.json').is_file():
+        with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
+            try:
+                users = json.load(bakes_file)
+            except:
+    	        return None
+        if users:
+            return users.get(user_id)
 
 
 def get_last_order_id(users):
@@ -29,6 +23,7 @@ def get_last_order_id(users):
             order_id = order['order_id']
             if last_order_id < order_id:
                 last_order_id = order_id
+
     return last_order_id
 
 
@@ -71,6 +66,7 @@ def add_user(context_data):
         'address': context_data['user_address'],
         'orders': [],
     }
+
     if Path('bakes.json').is_file():
         with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
             users = json.load(bakes_file)
@@ -78,6 +74,7 @@ def add_user(context_data):
                 users.update({ user_id: user })
     else:
         users = {user_id: user}
+
     with open('bakes.json', 'w', encoding='utf-8') as bakes_file:
         json.dump(users, bakes_file, ensure_ascii=False, indent=2)
 
@@ -151,6 +148,7 @@ def get_orders(user_id):
     user_id = str(user_id)
     with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
         users = json.load(bakes_file)
+
     orders = []
     for order in users[user_id]['orders']:
         order_layout = []
@@ -162,4 +160,5 @@ def get_orders(user_id):
         order_layout.append(f'Статус заказа: {order["status"]}')
         orders.append(order_layout)
     orders.reverse()
+
     return orders

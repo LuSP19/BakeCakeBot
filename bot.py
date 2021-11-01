@@ -30,15 +30,16 @@ DETAILS, CONFIRM, COMPLETE = range(17, 20)
 
 
 def start(update, context):
-    user = get_user(str(update.message.from_user.id))
+    user = get_user(update.message.from_user.id)
     context.user_data['user_id'] = update.message.from_user.id
     if user:
         reply_text = 'Приветствую! Вы в главном меню.'
         main_menu(update, context, reply_text)
     else:
+        with open('personal_data.pdf', 'rb') as pd_file:
+            update.message.reply_document(pd_file)
         update.message.reply_text(
-            'Подтвердите согласие на обработку персональных данных.\n'
-            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
+            'Подтвердите согласие на обработку персональных данных',
             reply_markup=ReplyKeyboardMarkup(
                 [['Принять', 'Отклонить']],
                 resize_keyboard=True,
@@ -469,8 +470,7 @@ def decline(update, _):
     reply_keyboard = [['Принять', 'Отклонить']]
     update.message.reply_text(
             'К сожалению, без согласия на обработку ПД вы не сможете сделать заказ\n\n'
-            'Подтвердите солгасие на обработку персональных данных.\n'
-            'Ознакомьтесь с условиями по ссылке -тут будет ссылка на PDF-',
+            'Подтвердите солгасие на обработку персональных данных',
             reply_markup=ReplyKeyboardMarkup(
                 reply_keyboard,
                 resize_keyboard=True,
