@@ -9,8 +9,9 @@ def get_user(user_id):
         with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
             try:
                 users = json.load(bakes_file)
-            except:
-    	        return None
+            except ValueError:
+                print('JSON file damaged or empty')
+                return None
         if users:
             return users.get(user_id)
 
@@ -71,7 +72,7 @@ def add_user(context_data):
         with open('bakes.json', 'r', encoding='utf-8') as bakes_file:
             users = json.load(bakes_file)
             if str(user_id) not in users.keys():
-                users.update({ user_id: user })
+                users.update({user_id: user})
     else:
         users = {user_id: user}
 

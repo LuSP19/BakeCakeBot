@@ -364,7 +364,7 @@ def delivery_date(update, context):
 
 def incorrect_date(update, context):
     update.message.reply_text(
-        'Пожалуйста, введите дату в формате "7.11.21"'
+        'Пожалуйста, введите дату в формате "7.11.2021"'
     )
     return DELIVERY_DATE
 
@@ -628,7 +628,7 @@ def main():
                 MessageHandler(Filters.regex('^Назад$'), delivery_address),
                 MessageHandler(Filters.regex('^Главное меню$'), main_menu),
                 MessageHandler(
-                    Filters.regex('^(0?[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])(\.(20)?\d{2})?$'),
+                    Filters.regex('^(0?[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20\d{2}$'),
                     delivery_time,
                 ),
                 MessageHandler(Filters.text, incorrect_date),
